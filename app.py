@@ -48,7 +48,6 @@ class CloverLeaf(App):
         src = self.source.with_suffix(".o")
         if src.exists():
             dst = src.parents[1] / src.name
-            print(f"{src=}, {dst=}")
             move(src=src, dst=dst)
         cmd = [
             "make",
