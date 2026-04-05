@@ -137,7 +137,9 @@ CFLAGS=$(CFLAGS_$(COMPILER)) $(OMP) $(I3E) $(C_OPTIONS) -c
 MPI_COMPILER=mpif90
 C_MPI_COMPILER=mpicc
 
-clover_leaf: c_lover *.f90 Makefile
+SOURCE = advec_mom_kernel_c
+
+$(SOURCE).x: c_lover *.f90 Makefile
 	$(MPI_COMPILER) $(FLAGS)	\
 	data.f90			\
 	definitions.f90			\
@@ -192,7 +194,7 @@ clover_leaf: c_lover *.f90 Makefile
 	reset_field_kernel_c.o          \
 	ideal_gas_kernel_c.o            \
 	viscosity_kernel_c.o            \
-	advec_mom_kernel_c.o            \
+	$(SOURCE).o            \
 	advec_cell_kernel_c.o           \
 	calc_dt_kernel_c.o		\
 	field_summary_kernel_c.o	\
@@ -201,7 +203,7 @@ clover_leaf: c_lover *.f90 Makefile
 	pack_kernel_c.o			\
 	generate_chunk_kernel_c.o	\
 	initialise_chunk_kernel_c.o	\
-	-o clover_leaf; echo $(MESSAGE)
+	-o $(SOURCE).x; echo $(MESSAGE)
 
 c_lover: *.c Makefile
 	$(C_MPI_COMPILER) $(CFLAGS)     \
@@ -224,4 +226,4 @@ c_lover: *.c Makefile
 
 
 clean:
-	rm -f *.o *.mod *genmod* *cuda* *hmd* *.cu *.oo *.hmf *.lst *.cub *.ptx *.cl clover_leaf
+	rm -f *.o *.mod *genmod* *cuda* *hmd* *.cu *.oo *.hmf *.lst *.cub *.ptx *.cl clover_leaf *.x
