@@ -65,8 +65,8 @@ SUBROUTINE read_input()
   dtv_safe=0.5_8
   dtdiv_safe=0.7_8
 
-  use_fortran_kernels=.TRUE.
-  use_C_kernels=.FALSE.
+  use_fortran_kernels=.FALSE.
+  use_C_kernels=.TRUE.
   use_OA_kernels=.FALSE.
   profiler_on=.FALSE.
   profiler%timestep=0.0
