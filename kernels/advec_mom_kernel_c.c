@@ -50,10 +50,14 @@ void advec_mom_kernel_c_(int *xmin,int *xmax,int *ymin,int *ymax,
                          int *drctn)
 
 {
-  int x_min=*xmin;
-  int x_max=*xmax;
-  int y_min=*ymin;
-  int y_max=*ymax;
+  // int x_min=*xmin;
+  // int x_max=*xmax;
+  // int y_min=*ymin;
+  // int y_max=*ymax;
+#define x_min 1
+#define x_max 960
+#define y_min 1
+#define y_max 960
   int which_vel=*whch_vl;
   int sweep_number=*swp_nmbr;
   int direction=*drctn;
@@ -71,6 +75,7 @@ void advec_mom_kernel_c_(int *xmin,int *xmax,int *ymin,int *ymax,
 #pragma omp parallel
  {
   if(mom_sweep==1){
+#pragma scop // 0
 #pragma omp for private(j)
     for (k=y_min-2;k<=y_max+2;k++) {
 #pragma omp simd
@@ -83,7 +88,9 @@ void advec_mom_kernel_c_(int *xmin,int *xmax,int *ymin,int *ymax,
                                                           -vol_flux_x[FTNREF2D(j  ,k  ,x_max+5,x_min-2,y_min-2)];
       }
     }
+#pragma endscop // 0
   } else if(mom_sweep==2){
+#pragma scop // 1
 #pragma omp for private(j)
     for (k=y_min-2;k<=y_max+2;k++) {
 #pragma omp simd
@@ -96,7 +103,9 @@ void advec_mom_kernel_c_(int *xmin,int *xmax,int *ymin,int *ymax,
                                                                -vol_flux_y[FTNREF2D(j  ,k  ,x_max+4,x_min-2,y_min-2)];
       }
     }
+#pragma endscop // 1
   } else if(mom_sweep==3){
+#pragma scop // 2
 #pragma omp for private(j)
     for (k=y_min-2;k<=y_max+2;k++) {
 #pragma omp simd
@@ -107,7 +116,9 @@ void advec_mom_kernel_c_(int *xmin,int *xmax,int *ymin,int *ymax,
                                                           -vol_flux_y[FTNREF2D(j  ,k  ,x_max+4,x_min-2,y_min-2)];
       }
     }
+#pragma endscop // 2
   } else if(mom_sweep==4){
+#pragma scop // 3
 #pragma omp for private(j)
     for (k=y_min-2;k<=y_max+2;k++) {
 #pragma omp simd
@@ -118,9 +129,11 @@ void advec_mom_kernel_c_(int *xmin,int *xmax,int *ymin,int *ymax,
                                                           -vol_flux_x[FTNREF2D(j  ,k  ,x_max+5,x_min-2,y_min-2)];
       }
     }
+#pragma endscop // 3
   }
 
   if(direction==1) {
+#pragma scop // 4
 #pragma omp for private(j)
     for (k=y_min;k<=y_max+1;k++) {
 #pragma omp simd
@@ -155,6 +168,7 @@ void advec_mom_kernel_c_(int *xmin,int *xmax,int *ymin,int *ymax,
                           -node_flux[FTNREF2D(j-1,k  ,x_max+5,x_min-2,y_min-2)]+node_flux[FTNREF2D(j  ,k  ,x_max+5,x_min-2,y_min-2)];
       }
     }
+#pragma endscop // 4
 #pragma omp for private(upwind,downwind,donor,dif,sigma,width,limiter,vdiffuw,vdiffdw,auw,adw,wind,j,advec_vel_s)
     for (k=y_min;k<=y_max+1;k++) {
       for (j=x_min-1;j<=x_max+1;j++) {
@@ -188,6 +202,7 @@ void advec_mom_kernel_c_(int *xmin,int *xmax,int *ymin,int *ymax,
       }
     }
 
+#pragma scop // 5
 #pragma omp for private(j)
     for (k=y_min;k<=y_max+1;k++) {
 #pragma omp simd
@@ -199,8 +214,10 @@ void advec_mom_kernel_c_(int *xmin,int *xmax,int *ymin,int *ymax,
                                                         /node_mass_post[FTNREF2D(j  ,k  ,x_max+5,x_min-2,y_min-2)];
       }
     }
+#pragma endscop // 5
   }
   else if(direction==2){
+#pragma scop // 6
 #pragma omp for private(j)
     for (k=y_min-2;k<=y_max+2;k++) {
 #pragma omp simd
@@ -235,6 +252,7 @@ void advec_mom_kernel_c_(int *xmin,int *xmax,int *ymin,int *ymax,
                           -node_flux[FTNREF2D(j  ,k-1,x_max+5,x_min-2,y_min-2)]+node_flux[FTNREF2D(j  ,k  ,x_max+5,x_min-2,y_min-2)];
       }
     }
+#pragma endscop // 6
 #pragma omp for private(upwind,downwind,donor,dif,sigma,width,limiter,vdiffuw,vdiffdw,auw,adw,wind,j,advec_vel_s)
     for (k=y_min-1;k<=y_max+1;k++) {
       for (j=x_min;j<=x_max+1;j++) {
@@ -267,6 +285,7 @@ void advec_mom_kernel_c_(int *xmin,int *xmax,int *ymin,int *ymax,
                                                            *node_flux[FTNREF2D(j  ,k  ,x_max+5,x_min-2,y_min-2)];
       }
     }
+#pragma scop // 7
 #pragma omp for private(j)
     for (k=y_min;k<=y_max+1;k++) {
 #pragma omp simd
@@ -278,6 +297,7 @@ void advec_mom_kernel_c_(int *xmin,int *xmax,int *ymin,int *ymax,
                                                         /node_mass_post[FTNREF2D(j  ,k  ,x_max+5,x_min-2,y_min-2)];
       }
     }
+#pragma endscop // 7
 
   }
 
