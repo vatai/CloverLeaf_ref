@@ -138,6 +138,10 @@ MPI_COMPILER=mpif90
 C_MPI_COMPILER=mpicc
 
 SOURCE = advec_mom_kernel_c
+#polly
+CSOURCE = advec_mom_kernel_c
+# PET
+CSOURCE = $(SOURCE)
 
 $(SOURCE).x: c_lover *.f90 Makefile
 	$(MPI_COMPILER) $(FLAGS)	\
@@ -204,7 +208,6 @@ $(SOURCE).x: c_lover *.f90 Makefile
 	generate_chunk_kernel_c.o	\
 	initialise_chunk_kernel_c.o	\
 	-o $(SOURCE).x; echo $(MESSAGE)
-
 c_lover: *.c Makefile
 	$(C_MPI_COMPILER) $(CFLAGS)     \
 	kernels/accelerate_kernel_c.c           \
@@ -214,7 +217,7 @@ c_lover: *.c Makefile
 	kernels/reset_field_kernel_c.c          \
 	kernels/ideal_gas_kernel_c.c            \
 	kernels/viscosity_kernel_c.c            \
-	kernels/advec_mom_kernel_c.c            \
+	kernels/$(CSOURCE).c            \
 	kernels/advec_cell_kernel_c.c           \
 	kernels/calc_dt_kernel_c.c		\
 	kernels/field_summary_kernel_c.c	\

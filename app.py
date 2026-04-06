@@ -3,14 +3,16 @@
 import os
 import re
 import sys
-from shutil import move, which
+from shutil import move
 from subprocess import CompletedProcess
 from typing import Optional
 
+from tadashi import TrEnum
 from tadashi.apps import App
-from tadashi.translators import Polly, Translator
+from tadashi.translators import Pet, Polly, Translator
 
 ml4tadashi = os.path.dirname(__file__)
+ml4tadashi = os.path.dirname(ml4tadashi)
 ml4tadashi = os.path.dirname(ml4tadashi)
 ml4tadashi = os.path.dirname(ml4tadashi)
 ml4tadashi = os.path.dirname(ml4tadashi)
@@ -46,13 +48,15 @@ class CloverLeaf(App):
 
     def compile_cmd(self, suffix: str) -> list[str]:
         src = self.source.with_suffix(".o")
-        if src.exists():
+        if src.exists() and isinstance(self.translator, Polly):
             dst = src.parents[1] / src.name
             move(src=src, dst=dst)
+            src.touch()
         cmd = [
             "make",
             "-j",
             f"SOURCE={self.source.with_suffix('').name}",
+            # f"CSOURCE={src.with_suffix('').name}",
             "COMPILER=GNU",
             "C_MPI_COMPILER=mpicc",
             "MPI_COMPILER=mpif90",
@@ -78,9 +82,60 @@ class CloverLeaf(App):
 
 
 def main():
-    # app = CloverLeaf(translator=Polly("clang"))
     ML4TADASHI.run(CloverLeaf, {"translator": "Polly"})
 
 
+def manual():
+    times = [
+        0.454686,
+        0.282210,
+        0.345998,
+        0.276447,
+        2.708418,
+        1.111301,
+        2.672818,
+        1.125872,
+    ]
+    indexs = dict([(v, k) for k, v in enumerate(times)])
+    max_idx = times.index(max(times))
+    # translator = Polly()
+    translator = Pet()
+    app = CloverLeaf(translator=translator)
+    print(f"{len(app.scops)=}")
+    otime = app.measure()
+    base = 20
+    diffs = [-2, -1, 0, 1, 2]
+
+    scop_idx = 4
+    for dx in diffs:
+        for dy in diffs:
+            sizex = base + dx
+            sizey = sizex + dy
+            app.reset_scops()
+            trs = [
+                [scop_idx, 1, TrEnum.TILE_2D, sizex, sizey],
+                # [6, 1, TrEnum.TILE_2D, sizex, sizey],
+            ]
+            trs = [
+                [4, 1, TrEnum.FULL_FUSE],
+                [4, 2, TrEnum.FUSE, 0, 1],
+                # [6, 1, TrEnum.TILE_2D, sizex, sizey],
+            ]
+            # trs = [
+            #     [4, 3, TrEnum.TILE_2D, sizex, sizey],
+            # ]
+
+            app.transform_list(trs)
+            # print(app.scops[scop_idx].schedule_tree[0].yaml_str)
+            if not app.legal:
+                print("NOT LEGAL")
+                continue
+            tapp = app.generate_code()
+            ttime = tapp.measure()
+            speedup = otime / ttime
+            print(f"{(sizex, sizey)=}, {otime=} {ttime=} {speedup=}")
+
+
 if __name__ == "__main__":
-    main()
+    # main()
+    manual()
