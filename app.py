@@ -106,38 +106,41 @@ def manual():
     translator = Pet()
     app = CloverLeaf(translator=translator)
     print(f"{len(app.scops)=}")
-    otime = app.measure()
-    base = 20
-    diffs = [-2, -1, 0, 1, 2]
+    app.compile()  # force compile
+    otime = 0.0
+    print("Measuring: ", end="")
+    otime = app.measure(3)
+    print(f"{otime=}")
+    diffs = [0]
+    for base in range(8, 128):
+        for dx in diffs:
+            for dy in diffs:
+                sizex = base + dx
+                sizey = sizex + dy
+                app.reset_scops()
+                for scop_idx in [4]:
 
-    scop_idx = 4
-    for dx in diffs:
-        for dy in diffs:
-            sizex = base + dx
-            sizey = sizex + dy
-            app.reset_scops()
-            trs = [
-                [scop_idx, 1, TrEnum.TILE_2D, sizex, sizey],
-                # [6, 1, TrEnum.TILE_2D, sizex, sizey],
-            ]
-            trs = [
-                [4, 1, TrEnum.FULL_FUSE],
-                [4, 2, TrEnum.FUSE, 0, 1],
-                # [6, 1, TrEnum.TILE_2D, sizex, sizey],
-            ]
-            # trs = [
-            #     [4, 3, TrEnum.TILE_2D, sizex, sizey],
-            # ]
+                    # merge first two loops and tile
+                    trs = [
+                        [scop_idx, 1, TrEnum.FUSE, 0, 1],
+                        [scop_idx, 4, TrEnum.FUSE, 0, 1],
+                        [scop_idx, 3, TrEnum.TILE_2D, sizex, sizey],
+                    ]
 
-            app.transform_list(trs)
-            # print(app.scops[scop_idx].schedule_tree[0].yaml_str)
-            if not app.legal:
-                print("NOT LEGAL")
-                continue
-            tapp = app.generate_code()
-            ttime = tapp.measure()
-            speedup = otime / ttime
-            print(f"{(sizex, sizey)=}, {otime=} {ttime=} {speedup=}")
+                    # tile first two loops
+                    # trs = [
+                    #     [scop_idx, 7, TrEnum.TILE_2D, sizex, sizey],
+                    #     [scop_idx, 3, TrEnum.TILE_2D, sizex, sizey],
+                    # ]
+                    app.transform_list(trs)
+                    # print(app.scops[scop_idx].schedule_tree[0].yaml_str)
+                if not app.legal:
+                    print("NOT LEGAL")
+                    continue
+                tapp = app.generate_code()
+                ttime = tapp.measure()
+                speedup = otime / ttime
+                print(f"{(sizex, sizey)=}, {otime=} {ttime=} {speedup=}")
 
 
 if __name__ == "__main__":
