@@ -29,6 +29,12 @@
 #include "ftocmacros.h"
 #include <math.h>
 
+#include <sys/time.h>
+#define START_TIMER(i) gettimeofday(&__start, NULL);
+#define END_TIMER(i) {gettimeofday(&__end, NULL); __timers[i] += (__end.tv_sec - __start.tv_sec) + (__end.tv_usec - __start.tv_usec) / 1000000.0;};
+double __timers[] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+struct timeval __start, __end;
+
 void advec_mom_kernel_c_(int *xmin,int *xmax,int *ymin,int *ymax,
                       double *vel1,
                       double *mass_flux_x,
@@ -76,6 +82,7 @@ void advec_mom_kernel_c_(int *xmin,int *xmax,int *ymin,int *ymax,
  {
   if(mom_sweep==1){
 #pragma scop // 0
+START_TIMER(0)
 #pragma omp for private(j)
     for (k=y_min-2;k<=y_max+2;k++) {
 #pragma omp simd
@@ -89,8 +96,10 @@ void advec_mom_kernel_c_(int *xmin,int *xmax,int *ymin,int *ymax,
       }
     }
 #pragma endscop // 0
+END_TIMER(0)
   } else if(mom_sweep==2){
 #pragma scop // 1
+START_TIMER(1)
 #pragma omp for private(j)
     for (k=y_min-2;k<=y_max+2;k++) {
 #pragma omp simd
@@ -104,8 +113,10 @@ void advec_mom_kernel_c_(int *xmin,int *xmax,int *ymin,int *ymax,
       }
     }
 #pragma endscop // 1
+END_TIMER(1)
   } else if(mom_sweep==3){
 #pragma scop // 2
+START_TIMER(2)
 #pragma omp for private(j)
     for (k=y_min-2;k<=y_max+2;k++) {
 #pragma omp simd
@@ -117,8 +128,10 @@ void advec_mom_kernel_c_(int *xmin,int *xmax,int *ymin,int *ymax,
       }
     }
 #pragma endscop // 2
+END_TIMER(2)
   } else if(mom_sweep==4){
 #pragma scop // 3
+START_TIMER(3)
 #pragma omp for private(j)
     for (k=y_min-2;k<=y_max+2;k++) {
 #pragma omp simd
@@ -130,10 +143,12 @@ void advec_mom_kernel_c_(int *xmin,int *xmax,int *ymin,int *ymax,
       }
     }
 #pragma endscop // 3
+END_TIMER(3)
   }
 
   if(direction==1) {
 #pragma scop // 4
+START_TIMER(4)
 #pragma omp for private(j)
     for (k=y_min;k<=y_max+1;k++) {
 #pragma omp simd
@@ -169,6 +184,7 @@ void advec_mom_kernel_c_(int *xmin,int *xmax,int *ymin,int *ymax,
       }
     }
 #pragma endscop // 4
+END_TIMER(4)
 #pragma omp for private(upwind,downwind,donor,dif,sigma,width,limiter,vdiffuw,vdiffdw,auw,adw,wind,j,advec_vel_s)
     for (k=y_min;k<=y_max+1;k++) {
       for (j=x_min-1;j<=x_max+1;j++) {
@@ -203,6 +219,7 @@ void advec_mom_kernel_c_(int *xmin,int *xmax,int *ymin,int *ymax,
     }
 
 #pragma scop // 5
+START_TIMER(5)
 #pragma omp for private(j)
     for (k=y_min;k<=y_max+1;k++) {
 #pragma omp simd
@@ -215,9 +232,11 @@ void advec_mom_kernel_c_(int *xmin,int *xmax,int *ymin,int *ymax,
       }
     }
 #pragma endscop // 5
+END_TIMER(5)
   }
   else if(direction==2){
 #pragma scop // 6
+START_TIMER(6)
 #pragma omp for private(j)
     for (k=y_min-2;k<=y_max+2;k++) {
 #pragma omp simd
@@ -253,6 +272,7 @@ void advec_mom_kernel_c_(int *xmin,int *xmax,int *ymin,int *ymax,
       }
     }
 #pragma endscop // 6
+END_TIMER(6)
 #pragma omp for private(upwind,downwind,donor,dif,sigma,width,limiter,vdiffuw,vdiffdw,auw,adw,wind,j,advec_vel_s)
     for (k=y_min-1;k<=y_max+1;k++) {
       for (j=x_min;j<=x_max+1;j++) {
@@ -286,6 +306,7 @@ void advec_mom_kernel_c_(int *xmin,int *xmax,int *ymin,int *ymax,
       }
     }
 #pragma scop // 7
+START_TIMER(7)
 #pragma omp for private(j)
     for (k=y_min;k<=y_max+1;k++) {
 #pragma omp simd
@@ -298,10 +319,15 @@ void advec_mom_kernel_c_(int *xmin,int *xmax,int *ymin,int *ymax,
       }
     }
 #pragma endscop // 7
+END_TIMER(7)
 
   }
 
  }
 
+ printf("@@@@ |");
+ for(int __i; __i < sizeof(__timers)/sizeof(*__timers); ++__i)
+	 printf("%i %lf |", __i, __timers[__i]);
+ printf("\n");
 }
 

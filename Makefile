@@ -111,7 +111,7 @@ ifdef DEBUG
   CFLAGS_AOCC     = -O0 -g -Wall -Wextra -fsanitize=address
   CFLAGS_INTEL    = -O0 -g -debug all -traceback
   CFLAGS_SUN      = -g -O0 -xopenmp=noopt -stackvar -u -fpover=yes -C -ftrap=common
-  CFLAGS_GNU       = -O0 -g -O -Wall -Wextra -fbounds-check
+  CFLAGS_GNU       = -O0 -g -O -Wall -Wextra -fbounds-check -fno-omit-frame-pointer -fno-inline
   CFLAGS_CRAY     = -O0 -g -em -eD
   CFLAGS_PGI      = -O0 -g -C -Mchkstk -Ktrap=fp -Mchkfpstk
   CFLAGS_PATHSCALE= -O0 -g
