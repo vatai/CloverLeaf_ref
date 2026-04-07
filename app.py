@@ -89,6 +89,15 @@ def main():
     ML4TADASHI.run(CloverLeaf, {"translator": "Polly"})
 
 
+def merge01tile(scop_idx, sizex, sizey):
+    # merge first two loops and tile
+    return [
+        [scop_idx, 1, TrEnum.FUSE, 0, 1],
+        [scop_idx, 4, TrEnum.FUSE, 0, 1],
+        [scop_idx, 3, TrEnum.TILE_2D, sizex, sizey],
+    ]
+
+
 def manual():
     times = [
         0.454686,
@@ -118,22 +127,17 @@ def manual():
                 sizex = base + dx
                 sizey = sizex + dy
                 app.reset_scops()
-                for scop_idx in [4]:
-
-                    # merge first two loops and tile
-                    trs = [
-                        [scop_idx, 1, TrEnum.FUSE, 0, 1],
-                        [scop_idx, 4, TrEnum.FUSE, 0, 1],
-                        [scop_idx, 3, TrEnum.TILE_2D, sizex, sizey],
-                    ]
+                trs = []
+                for scop_idx in [4, 6]:
+                    trs += merge01tile(scop_idx, sizex, sizey)
 
                     # tile first two loops
                     # trs = [
                     #     [scop_idx, 7, TrEnum.TILE_2D, sizex, sizey],
                     #     [scop_idx, 3, TrEnum.TILE_2D, sizex, sizey],
                     # ]
-                    app.transform_list(trs)
-                    # print(app.scops[scop_idx].schedule_tree[0].yaml_str)
+                app.transform_list(trs)
+                # print(app.scops[scop_idx].schedule_tree[0].yaml_str)
                 if not app.legal:
                     print("NOT LEGAL")
                     continue
