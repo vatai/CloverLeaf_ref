@@ -145,7 +145,7 @@ def manual():
                 sizex = base + dx
                 sizey = sizex + dy
                 app.reset_scops()
-                for scop_idx in [0, 1, 2, 3, 5]:
+                for scop_idx in [0, 1, 2, 3]:  # 5 and 7 are illegal!
                     trs = split2tile2d(scop_idx, sizex, sizey)
                     app.transform_list(trs)
                 for scop_idx in [4, 6]:
