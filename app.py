@@ -55,7 +55,7 @@ class CloverLeaf(App):
             src.touch()
         cmd = [
             "make",
-            "-j",
+            # "-j",
             f"SOURCE={self.source.with_suffix('').name}",
             # f"CSOURCE={src.with_suffix('').name}",
             "COMPILER=GNU",
@@ -157,7 +157,7 @@ def manual():
                     print("NOT LEGAL")
                     continue
                 tapp = app.generate_code()
-                ttime = tapp.measure(repeat)
+                ttime = tapp.measure()
                 speedup = otime / ttime
                 strs = [
                     f"{sizex=:4}",
