@@ -143,26 +143,9 @@ CSOURCE = advec_mom_kernel_c
 # PET
 CSOURCE = $(SOURCE)
 
-C_SRC := kernels/accelerate_kernel_c.c           \
-	kernels/PdV_kernel_c.c                  \
-	kernels/flux_calc_kernel_c.c            \
-	kernels/revert_kernel_c.c               \
-	kernels/reset_field_kernel_c.c          \
-	kernels/ideal_gas_kernel_c.c            \
-	kernels/viscosity_kernel_c.c            \
-	kernels/$(CSOURCE).c            \
-	kernels/advec_cell_kernel_c.c           \
-	kernels/calc_dt_kernel_c.c		\
-	kernels/field_summary_kernel_c.c	\
-	kernels/update_halo_kernel_c.c		\
-	kernels/pack_kernel_c.c			\
-	kernels/generate_chunk_kernel_c.c	\
-	kernels/initialise_chunk_kernel_c.c	\
-	timer_c.c
-
-C_OBJ := $(patsubst %.c, %.o, $(patsubst kernels/%.c, %.o, $(C_SRC)))
-
-F_SRC := data.f90			\
+$(SOURCE).x: c_lover *.f90 Makefile
+	$(MPI_COMPILER) $(FLAGS)	\
+	data.f90			\
 	definitions.f90			\
 	kernels/pack_kernel.f90		\
 	clover.f90			\
@@ -208,30 +191,42 @@ F_SRC := data.f90			\
 	hydro.f90			\
 	visit.f90			\
 	clover_leaf.f90			\
-
-F_OBJ = $(patsubst %.f90, %.o, $(patsubst kernels/%.f90, %.o, $(F_SRC)))
-
-$(SOURCE).x: *.f90 Makefile $(C_OBJ) $(F_OBJ)
-	$(MPI_COMPILER) $(FLAGS)	\
-	$(F_OBJ)			\
-	$(C_OBJ)			\
+	accelerate_kernel_c.o           \
+	PdV_kernel_c.o                  \
+	flux_calc_kernel_c.o            \
+	revert_kernel_c.o               \
+	reset_field_kernel_c.o          \
+	ideal_gas_kernel_c.o            \
+	viscosity_kernel_c.o            \
+	$(SOURCE).o            \
+	advec_cell_kernel_c.o           \
+	calc_dt_kernel_c.o		\
+	field_summary_kernel_c.o	\
+	update_halo_kernel_c.o		\
+	timer_c.o                       \
+	pack_kernel_c.o			\
+	generate_chunk_kernel_c.o	\
+	initialise_chunk_kernel_c.o	\
 	-o $(SOURCE).x; echo $(MESSAGE)
+c_lover: *.c Makefile
+	$(C_MPI_COMPILER) $(CFLAGS)     \
+	kernels/accelerate_kernel_c.c           \
+	kernels/PdV_kernel_c.c                  \
+	kernels/flux_calc_kernel_c.c            \
+	kernels/revert_kernel_c.c               \
+	kernels/reset_field_kernel_c.c          \
+	kernels/ideal_gas_kernel_c.c            \
+	kernels/viscosity_kernel_c.c            \
+	kernels/$(CSOURCE).c            \
+	kernels/advec_cell_kernel_c.c           \
+	kernels/calc_dt_kernel_c.c		\
+	kernels/field_summary_kernel_c.c	\
+	kernels/update_halo_kernel_c.c		\
+	kernels/pack_kernel_c.c			\
+	kernels/generate_chunk_kernel_c.c	\
+	kernels/initialise_chunk_kernel_c.c	\
+	timer_c.c
 
-%.o: %.c
-	$(C_MPI_COMPILER) $(CFLAGS) $< -o $@
-#	$(CC) $(CFLAGS) -c $< -o $@
-
-%.o: kernels/%.c
-	$(C_MPI_COMPILER) $(CFLAGS) $< -o $@
-#	$(CC) $(CFLAGS) -c $< -o $@
-
-%.o: %.f90
-	$(MPI_COMPILER) $(FLAGS) -c $< -o $@
-
-%.o: kernels/%.f90
-	$(MPI_COMPILER) $(FLAGS) -c $< -o $@
-
-include deps.mk
 
 clean:
 	rm -f *.o *.mod *genmod* *cuda* *hmd* *.cu *.oo *.hmf *.lst *.cub *.ptx *.cl clover_leaf *.x
