@@ -98,6 +98,21 @@ def merge01tile(scop_idx, sizex, sizey):
     ]
 
 
+def split2tile2d(scop_idx, sizex, sizey):
+    return [
+        [scop_idx, 2, TrEnum.FULL_SPLIT],
+        [scop_idx, 3, TrEnum.TILE_2D, sizex, sizey],
+    ]
+
+
+def tile2d2x(scop_idx, sizex, sizey):
+    # tile first two loops
+    return [
+        [scop_idx, 7, TrEnum.TILE_2D, sizex, sizey],
+        [scop_idx, 3, TrEnum.TILE_2D, sizex, sizey],
+    ]
+
+
 def manual():
     times = [
         0.454686,
@@ -127,16 +142,13 @@ def manual():
                 sizex = base + dx
                 sizey = sizex + dy
                 app.reset_scops()
-                trs = []
+                for scop_idx in [0, 1, 2, 3, 5]:
+                    trs = split2tile2d(scop_idx, sizex, sizey)
+                    app.transform_list(trs)
                 for scop_idx in [4, 6]:
-                    trs += merge01tile(scop_idx, sizex, sizey)
+                    trs = merge01tile(scop_idx, sizex, sizey)
+                    app.transform_list(trs)
 
-                    # tile first two loops
-                    # trs = [
-                    #     [scop_idx, 7, TrEnum.TILE_2D, sizex, sizey],
-                    #     [scop_idx, 3, TrEnum.TILE_2D, sizex, sizey],
-                    # ]
-                app.transform_list(trs)
                 # print(app.scops[scop_idx].schedule_tree[0].yaml_str)
                 if not app.legal:
                     print("NOT LEGAL")
