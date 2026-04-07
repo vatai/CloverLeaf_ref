@@ -3,6 +3,7 @@
 import os
 import re
 import sys
+from pathlib import Path
 from shutil import move
 from subprocess import CompletedProcess
 from typing import Optional
@@ -63,9 +64,12 @@ class CloverLeaf(App):
         ]
         return cmd
 
-    def run_cmd(self) -> list[str]:
-        cmd = [f"./{self.output_binary.name}.x"]
-        return cmd
+    @property
+    def output_binary(self) -> Path:
+        outbin = self.source.parents[1] / self.source.with_suffix(".x").name
+        outbin = Path(f"./{outbin}")
+        outbin.is_absolute()
+        return outbin
 
     def extract_runtime(self, proc: CompletedProcess) -> float:
         stdout = proc.stderr.decode()
