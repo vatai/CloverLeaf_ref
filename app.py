@@ -133,10 +133,13 @@ def manual():
     app.compile()  # force compile
     otime = 0.0
     print("Measuring: ", end="")
-    otime = app.measure(3)
+    repeat = 3
+    otime = app.measure(repeat)
     print(f"{otime=}")
     diffs = [0]
-    for base in range(8, 128):
+    bases = range(8, 128)  # all
+    # bases = [21, 46, 53, 55, 77, 83, 127, 128, 129]  # niku
+    for base in bases:
         for dx in diffs:
             for dy in diffs:
                 sizex = base + dx
@@ -154,9 +157,16 @@ def manual():
                     print("NOT LEGAL")
                     continue
                 tapp = app.generate_code()
-                ttime = tapp.measure()
+                ttime = tapp.measure(repeat)
                 speedup = otime / ttime
-                print(f"{(sizex, sizey)=}, {otime=} {ttime=} {speedup=}")
+                strs = [
+                    f"{sizex=:4}",
+                    f"{sizey=:4}",
+                    f"{otime=:<6.4}",
+                    f"{ttime=:<6.4}",
+                    f"{speedup=:<6.4}",
+                ]
+                print(", ".join(strs))
 
 
 if __name__ == "__main__":
